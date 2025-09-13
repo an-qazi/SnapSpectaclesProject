@@ -1,0 +1,84 @@
+
+# Lens Studio Project Generation Checklist
+
+This document outlines the shortcomings of the auto-generated "BoxDemo" project when compared to a standard project created by Lens Studio. This checklist should be used to improve future project generation.
+
+## I. Project File (`.esproj`)
+
+The generated `.esproj` file was minimal and lacked many fields present in a standard project file.
+
+- [ ] **`studioVersion`**: Should include `build`, `type`, `buildFlavor`, `timestamp`, and `commit` fields.
+- [ ] **`coreVersion`**: Should be up-to-date.
+- [ ] **`clientVersion`**: Was missing.
+- [ ] **`updateCheckpoint`**: Was missing.
+- [ ] **`viewConfig`**: This entire section was missing. It defines the simulation device, camera FOV, resolution, etc.
+- [ ] **`metaInfo`**: The generated file had a very sparse `metaInfo` section. The following fields were missing:
+    - [ ] `hints`
+    - [ ] `tags`
+    - [ ] `lensDescriptors`
+    - [ ] `lensApplicability`
+    - [ ] `lensClientCompatibilities`
+    - [ ] `platformBundlesEnabled`
+    - [ ] `iconHash`
+    - [ ] `videoPreviewHash`
+    - [ ] `fromTemplateName`
+    - [ ] `fromTemplateUrl`
+    - [ ] `activationCamera`
+    - [ ] `sourceMapEnabled`
+    - [ ] `usingMinClientVersions`
+    - [ ] `androidMinClientVersion`
+    - [ ] `iOSMinClientVersion`
+    - [ ] `documentId`
+    - [ ] `originalDocumentId`
+
+## II. Scene File (`.scene`)
+
+The generated `Scene.scene` file was a minimal attempt and differed significantly from a standard scene.
+
+- [ ] **Scene Hierarchy**:
+    - [ ] A `[ROOT]` object was not created. All scene objects should be parented to this.
+    - [ ] No default `Lighting` object with `Envmap` and `Light` children was created.
+- [ ] **Camera**:
+    - [ ] The generated camera was very basic.
+    - [ ] It was missing a `Device Tracking` component.
+    - [ ] Many camera properties were not defined.
+- [ ] **Scene Content**:
+    - [ ] The box was created dynamically in a script. A standard project would have the box as a `SceneObject` with `RenderMeshVisual`, `Material`, and `Mesh` components defined directly in the `.scene` file.
+- [ ] **GUIDs**:
+    - [ ] Placeholder GUIDs were used. Proper GUIDs should be generated for all objects and components.
+
+## III. Asset and Directory Structure
+
+The generated project was missing many standard assets and configuration files.
+
+- [ ] **`.meta` Files**:
+    - [ ] No `.meta` files were generated for the created assets (`Scene.scene`, `Box.ts`). These are critical for Lens Studio to recognize and import assets correctly.
+- [ ] **Default Assets**:
+    - [ ] The project was missing default assets that come with a new Lens Studio project, such as:
+        - `PBR.mat` (PBR material)
+        - `pbr.ss_graph` (PBR shader graph)
+        - `Box.mesh` (default box mesh)
+        - Default textures (`Base.png`, `Normal.png`, `MaterialParams.png`)
+        - `Echopark.hdr` (environment map)
+        - `Render Target.renderTarget`
+        - `Device Camera Texture.deviceCameraTexture`
+- [ ] **Configuration Files**:
+    - [ ] `.gitattributes`
+    - [ ] `.gitignore`
+    - [ ] `jsconfig.json`
+    - [ ] `tsconfig.json`
+- [ ] **Standard Directories**:
+    - [ ] `Workspaces/`
+    - [ ] `PluginsUserPreferences/`
+    - [ ] `Support/` (containing `StudioLib.d.ts`)
+
+## IV. Scripting
+
+- [ ] **Script Metadata (`.meta`)**: As mentioned above, the `.meta` file for the `Box.ts` script was missing. This file is essential and should contain `AssetImportMetadata` and `TypeScriptAssetData`.
+- [ ] **Asset Referencing**: The script created a material and mesh dynamically. The standard practice is to reference pre-existing assets from the `Assets` folder. The script should have referenced a `PBR.mat` and `Box.mesh` asset.
+
+## V. Summary of Failures
+
+1.  **Incomplete Project Scaffolding**: The biggest failure was not creating all the necessary configuration files and default assets that a Lens Studio project requires. This includes `.meta` files, `.esproj` fields, and default assets.
+2.  **Dynamic vs. Static Scene Creation**: The approach of dynamically creating the box in a script is valid for some use cases, but for a simple demo, a static scene with objects defined in the `.scene` file is the standard and expected structure.
+3.  **Missing GUIDs**: Using placeholder GUIDs is incorrect. The tool should generate valid, unique GUIDs for all scene objects and components.
