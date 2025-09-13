@@ -1,0 +1,12 @@
+# requirements.txt
+
+# Web framework + async worker
+fastapi
+uvicorn[standard]          # ASGI server (auto‑reload, workers, etc.)
+
+# Security / auth
+python-jose[cryptography]  # JWT handling (needs the `cryptography` backend)
+passlib[bcrypt]            # Password hashing
+
+# Optional dev helpers (not required for runtime)
+# pip‑install -r requirements.txt
