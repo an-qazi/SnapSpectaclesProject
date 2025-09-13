@@ -58,4 +58,6 @@ A Lens Studio project requires a specific set of default assets, configuration f
 3.  **Invalid Scene Structure**: The scene is incomplete, missing lighting, a proper camera setup, and relies on a script to create its content instead of defining it declaratively. The use of placeholder GUIDs also invalidates the scene.
 4.  **Missing Default Assets**: The project attempts to create a box but is missing the fundamental mesh and material assets that would normally be included and referenced.
 
+*Human-added, and so more important*
+**ENSURE ALL PROJECTS HAVE UNIQUE UUIDs. THIS IS A MISTAKE GEMINI HAS MADE IN THE PAST**
 In contrast, `legit-box-demo` is a textbook example of a minimal, valid project. It has a complete and valid project file, a well-structured scene, all necessary assets are present, and every asset is accompanied by a valid `.meta` file.
