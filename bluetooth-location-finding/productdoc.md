@@ -1,0 +1,144 @@
+  ### **Technical Design: Nearby Friends Visual Indicator**
+
+#### **1. Overview**
+
+This document outlines the technical design for a feature that provides a visual overlay on Snap Spectacles to indicate when a user's Snapchat friends are physically nearby. Detection will be accomplished using Bluetooth Low Energy (BLE), and the visual indicator will be a "glowing halo" rendered in the Spectacles' display.
+
+The core challenge is to identify a nearby device as belonging to a Snapchat friend in a secure and privacy-preserving manner. This design uses a token-based system, where the Snapchat backend acts as the source of truth for friend relationships.
+
+#### **2. Bluetooth Friend Detection**
+
+We will implement a "Friend Beacon" system. This avoids broadcasting raw user-identifiable information.
+
+**2.1. Friendship Token System**
+
+*   **Token Generation:** The Snapchat backend will generate a unique, short-lived, and rotating `FriendshipToken` for each user.
+*   **Token Distribution:**
+    1.  A user's Snapchat app (on their phone) will periodically fetch a list of `FriendshipToken`s for all of their friends.
+    2.  The app will also fetch its *own* `FriendshipToken`.
+*   **Token Sync:** The user's Snapchat app will sync the list of their friends' tokens to their paired Spectacles. This list will be stored locally on the Spectacles.
+
+**2.2. BLE Advertisement (Beacon)**
+
+*   Each user's Snapchat app will continuously broadcast its own `FriendshipToken` using a custom BLE advertisement.
+*   This advertisement will use a dedicated **Service UUID** (e.g., `1312-FRIEND-BEACON-SERVICE-UUID`) to allow for efficient scanning.
+*   The `FriendshipToken` will be included in the **Service Data** field of the advertisement packet.
+
+**2.3. Scanning and Detection on Spectacles**
+
+*   The Spectacles Lens will use the `BluetoothCentralModule` to continuously scan for BLE advertisements that match the custom Service UUID.
+*   When a matching advertisement is detected, the Lens will extract the `FriendshipToken` from the service data.
+*   It will then compare this received token against the locally stored list of friends' tokens.
+*   If a match is found, the Spectacles will consider that friend "nearby." The signal strength (RSSI) will also be recorded to estimate proximity.
+
+#### **3. Visual Rendering Strategy**
+
+The "glowing halo" will be a 2D UI element rendered on the Spectacles' display. Its properties will change based on the proximity of the detected friend.
+
+*   **Limitation:** BLE RSSI provides signal strength (a rough proxy for distance) but not direction. Therefore, the halo cannot be accurately placed in 3D space around the friend.
+*   **Implementation:**
+    1.  A 2D image or shape (the "halo") will be added to the Lens scene. It will be hidden by default.
+    2.  When a friend is detected, the halo will become visible.
+    3.  The halo's appearance will be modulated by the friend's BLE signal strength (RSSI). For example:
+        *   **Opacity:** A stronger signal (closer friend) results in a more opaque halo.
+        *   **Scale:** A stronger signal results in a larger halo.
+        *   **Color:** The color could shift from cool (far) to warm (near).
+    4.  If multiple friends are nearby, the halo's appearance will be driven by the friend with the strongest signal. The UI could also be adapted to show a count of nearby friends.
+
+#### **4. Data Flow**
+
+1.  **Backend -> Phone:** The Snapchat app on the user's phone fetches the `FriendshipToken` list for their friends and syncs it to the Spectacles.
+2.  **Friend's Phone (Beacon):** A friend's Snapchat app broadcasts their personal `FriendshipToken` via BLE.
+3.  **Spectacles (Scan):** The Spectacles Lens scans for and receives the beacon advertisement.
+4.  **Spectacles (Detection):** The `FriendDetector` script extracts the token and matches it against its local list.
+5.  **Spectacles (State Update):** Upon a successful match, the script updates an internal state with the friend's ID and current RSSI. It also manages a list of all currently nearby friends and removes them if their beacon hasn't been seen for a few seconds.
+6.  **Spectacles (Render):** The `HaloRenderer` script reads the state from the `FriendDetector`. If a friend is nearby, it makes the halo visible and adjusts its visual properties based on the strongest RSSI value. If no friends are detected, it hides the halo.
+
+#### **5. Code Components and Functions**
+
+The implementation on Spectacles will be broken into two main JavaScript components within Lens Studio.
+
+**5.1. `FriendDetector.js` (Logic)**
+
+This script handles all BLE scanning and friend verification.
+
+```javascript
+// Manages scanning and detection logic
+class FriendDetector {
+    constructor() {
+        this.bluetooth = require("LensStudio:BluetoothCentralModule");
+        this.friendTokens = new Map(); // Stores synced friend tokens {token -> friendId}
+        this.nearbyFriends = new Map(); // Stores detected friends {friendId -> {rssi, lastSeen}}
+    }
+
+    // Called to update the list of tokens from the phone
+    setFriendTokens(tokens) { /* ... */ }
+
+    // Starts the BLE scanning process
+    startScanning() {
+        this.bluetooth.startScan(
+            [{ serviceUuid: "1312-FRIEND-BEACON-SERVICE-UUID" }],
+            { uniqueDevices: false }, // Continuously get updates
+            (scanResult) => { this.onDeviceFound(scanResult); }
+        );
+    }
+
+    // Callback for when a device is found
+    onDeviceFound(result) {
+        const token = parseTokenFromAdvertisement(result.advertisementData);
+        if (this.friendTokens.has(token)) {
+            const friendId = this.friendTokens.get(token);
+            this.nearbyFriends.set(friendId, {
+                rssi: result.rssi,
+                lastSeen: Date.now()
+            });
+        }
+    }
+
+    // Called every frame to clean up stale entries
+    update() {
+        // Remove friends who have gone out of range (lastSeen is too old)
+    }
+
+    // Public getter for the renderer to use
+    getClosestFriend() {
+        // Logic to find the friend with the strongest RSSI from this.nearbyFriends
+        // Returns null if no friends are nearby.
+    }
+}
+```
+
+**5.2. `HaloRenderer.js` (Visuals)**
+
+This script controls the appearance of the halo based on data from the `FriendDetector`.
+
+```javascript
+// Manages the visual halo effect
+class HaloRenderer {
+    constructor(sceneObject, friendDetector) {
+        this.haloImage = sceneObject.getComponent("Image");
+        this.friendDetector = friendDetector;
+        this.haloImage.enabled = false;
+    }
+
+    // Called every frame by Lens Studio
+    update() {
+        const closestFriend = this.friendDetector.getClosestFriend();
+
+        if (closestFriend) {
+            this.haloImage.enabled = true;
+            const opacity = this.convertRssiToOpacity(closestFriend.rssi);
+            const scale = this.convertRssiToScale(closestFriend.rssi);
+
+            // Update the halo's material properties
+            this.haloImage.mainPass.baseColor = new vec4(1.0, 1.0, 0.0, opacity);
+            this.haloImage.getSceneObject().getTransform().setLocalScale(new vec3(scale, scale, scale));
+        } else {
+            this.haloImage.enabled = false;
+        }
+    }
+
+    convertRssiToOpacity(rssi) { /* Maps RSSI range to 0.0-1.0 */ }
+    convertRssiToScale(rssi) { /* Maps RSSI range to a scale factor */ }
+}
+```
