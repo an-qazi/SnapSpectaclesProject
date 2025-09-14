@@ -1,0 +1,33 @@
+{
+  "coreVersion": "5.12.0",
+  "studioVersion": {
+    "major": 5,
+    "minor": 12,
+    "patch": 0,
+    "build": 1,
+    "type": "Release"
+  },
+  "clientVersion": "6.0.0",
+  "updateCheckpoint": 1,
+  "viewConfig": {
+    "simulationDevice": "Spectacles",
+    "cameraFov": 46.8,
+    "resolution": [1920, 1080],
+    "aspectRatio": 1.777777777777778
+  },
+  "metaInfo": {
+    "name": "CartesianMapper",
+    "description": "2D cartesian coordinate mapping for Snap Spectacles",
+    "version": "1.0.0",
+    "snapchatLensId": "",
+    "iconHash": "",
+    "videoPreviewHash": "",
+    "fromTemplateName": "",
+    "fromTemplateUrl": "",
+    "activationCamera": "back",
+    "sourceMapEnabled": false,
+    "usingMinClientVersions": false,
+    "documentId": "",
+    "originalDocumentId": ""
+  }
+}

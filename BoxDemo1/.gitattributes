@@ -45,7 +45,6 @@ Assets/**/*.cameraRollModule !filter !diff !merge text linguist-language=yaml me
 Assets/**/*.cloudStorageModule !filter !diff !merge text linguist-language=yaml merge=lens-studio-yaml-merge
 Assets/**/*.colocatedLandmarks2DMesh !filter !diff !merge text linguist-language=yaml merge=lens-studio-yaml-merge
 Assets/**/*.colocatedLandmarks3DMesh !filter !diff !merge text linguist-language=yaml merge=lens-studio-yaml-merge
-Assets/**/*.commerceKitModule !filter !diff !merge text linguist-language=yaml merge=lens-studio-yaml-merge
 Assets/**/*.connectedLensModule !filter !diff !merge text linguist-language=yaml merge=lens-studio-yaml-merge
 Assets/**/*.coreMLModule !filter !diff !merge text linguist-language=yaml merge=lens-studio-yaml-merge
 Assets/**/*.deepLinkModule !filter !diff !merge text linguist-language=yaml merge=lens-studio-yaml-merge
