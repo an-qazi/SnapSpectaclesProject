@@ -1,0 +1,62 @@
+{
+  "objects": [
+    {
+      "name": "[ROOT]",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1]
+      },
+      "id": "root-object",
+      "children": [
+        {
+          "name": "Camera",
+          "transform": {
+            "position": [0, 0, 0],
+            "rotation": [0, 0, 0, 1],
+            "scale": [1, 1, 1]
+          },
+          "id": "camera-object",
+          "components": [
+            {
+              "type": "Camera"
+            },
+            {
+              "type": "DeviceTracking"
+            }
+          ]
+        },
+        {
+          "name": "Script Holder",
+          "transform": {
+            "position": [0, 0, 0],
+            "rotation": [0, 0, 0, 1],
+            "scale": [1, 1, 1]
+          },
+          "id": "script-holder",
+          "components": [
+            {
+              "type": "Script",
+              "scriptPath": "CartesianMapper.js"
+            }
+          ]
+        },
+        {
+          "name": "Grid Container",
+          "transform": {
+            "position": [0, 0, 0],
+            "rotation": [0, 0, 0, 1],
+            "scale": [1, 1, 1]
+          },
+          "id": "grid-container"
+        }
+      ]
+    }
+  ],
+  "coreVersion": "5.12.0",
+  "studioVersion": {
+    "major": 5,
+    "minor": 12,
+    "patch": 0
+  }
+}
